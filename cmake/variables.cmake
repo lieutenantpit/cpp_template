@@ -37,24 +37,19 @@ if(NOT CMAKE_BUILD_TYPE AND (GEN_NINJA OR GEN_MAKEFILES))
 endif()
 
 
-# Path to the include directory.
-set(CEF_INCLUDE_PATH "${_CEF_ROOT}")
+# # Path to the include directory.
+# set(PROJECT_INCLUDE_PATH "${_PROJECT_ROOT}")
 
-# Path to the libcef_dll_wrapper target.
-set(CEF_LIBCEF_DLL_WRAPPER_PATH "${_CEF_ROOT}/libcef_dll")
+# # Path to the libPROJECT_dll_wrapper target.
+# set(PROJECT_LIBPROJECT_DLL_WRAPPER_PATH "${_PROJECT_ROOT}/libPROJECT_dll")
 
 
 # Shared compiler/linker flags.
-list(APPEND CEF_COMPILER_DEFINES
+list(APPEND COMPILER_DEFINES
   # Allow C++ programs to use stdint.h macros specified in the C99 standard that aren't 
   # in the C++ standard (e.g. UINT8_MAX, INT64_MIN, etc)
   __STDC_CONSTANT_MACROS __STDC_FORMAT_MACROS
   )
-
-
-# Configure use of the sandbox.
-option(USE_SANDBOX "Enable or disable use of the sandbox." ON)
-
 
 #
 # Linux configuration.
@@ -62,8 +57,8 @@ option(USE_SANDBOX "Enable or disable use of the sandbox." ON)
 
 if(OS_LINUX)
   # Platform-specific compiler/linker flags.
-  set(CEF_LIBTYPE SHARED)
-  list(APPEND CEF_COMPILER_FLAGS
+  set(PROJECT_LIBTYPE SHARED)
+  list(APPEND PROJECT_COMPILER_FLAGS
     -fno-strict-aliasing            # Avoid assumptions regarding non-aliasing of objects of different types
     -fPIC                           # Generate position-independent code for shared libraries
     -fstack-protector               # Protect some vulnerable functions from stack-smashing (security feature)
@@ -79,10 +74,10 @@ if(OS_LINUX)
     -Wno-error=comment              # Don't warn about code in comments
     -Wno-comment                    # Don't warn about code in comments
     )
-  list(APPEND CEF_C_COMPILER_FLAGS
+  list(APPEND PROJECT_C_COMPILER_FLAGS
     -std=c99                        # Use the C99 language standard
     )
-  list(APPEND CEF_CXX_COMPILER_FLAGS
+  list(APPEND PROJECT_CXX_COMPILER_FLAGS
     -fno-exceptions                 # Disable exceptions
     -fno-rtti                       # Disable real-time type information
     -fno-threadsafe-statics         # Don't generate thread-safe statics
@@ -90,11 +85,11 @@ if(OS_LINUX)
     -std=gnu++11                    # Use the C++11 language standard including GNU extensions
     -Wsign-compare                  # Warn about mixed signed/unsigned type comparisons
     )
-  list(APPEND CEF_COMPILER_FLAGS_DEBUG
+  list(APPEND PROJECT_COMPILER_FLAGS_DEBUG
     -O0                             # Disable optimizations
     -g                              # Generate debug information
     )
-  list(APPEND CEF_COMPILER_FLAGS_RELEASE
+  list(APPEND PROJECT_COMPILER_FLAGS_RELEASE
     -O2                             # Optimize for maximum speed
     -fdata-sections                 # Enable linker optimizations to improve locality of reference for data sections
     -ffunction-sections             # Enable linker optimizations to improve locality of reference for function sections
@@ -102,7 +97,7 @@ if(OS_LINUX)
     -U_FORTIFY_SOURCE               # Undefine _FORTIFY_SOURCE in case it was previously defined
     -D_FORTIFY_SOURCE=2             # Add memory and string function protection (security feature, related to stack-protector)
     )
-  list(APPEND CEF_LINKER_FLAGS
+  list(APPEND PROJECT_LINKER_FLAGS
     -fPIC                           # Generate position-independent code for shared libraries
     -pthread                        # Use the pthread library
     -Wl,--disable-new-dtags         # Don't generate new-style dynamic tags in ELF
@@ -112,15 +107,15 @@ if(OS_LINUX)
     -Wl,-z,now                      # Resolve symbols on program start instead of on first use (security feature)
     -Wl,-z,relro                    # Mark relocation sections as read-only (security feature)
     )
-  list(APPEND CEF_LINKER_FLAGS_RELEASE
+  list(APPEND PROJECT_LINKER_FLAGS_RELEASE
     -Wl,-O1                         # Enable linker optimizations
     -Wl,--as-needed                 # Only link libraries that export symbols used by the binary
     -Wl,--gc-sections               # Remove unused code resulting from -fdata-sections and -function-sections
     )
-  list(APPEND CEF_COMPILER_DEFINES
+  list(APPEND PROJECT_COMPILER_DEFINES
     _FILE_OFFSET_BITS=64            # Allow the Large File Support (LFS) interface to replace the old interface
     )
-  list(APPEND CEF_COMPILER_DEFINES_RELEASE
+  list(APPEND PROJECT_COMPILER_DEFINES_RELEASE
     NDEBUG                          # Not a debug build
     )
 
@@ -129,103 +124,97 @@ if(OS_LINUX)
 
   CHECK_CXX_COMPILER_FLAG(-Wno-undefined-var-template COMPILER_SUPPORTS_NO_UNDEFINED_VAR_TEMPLATE)
   if(COMPILER_SUPPORTS_NO_UNDEFINED_VAR_TEMPLATE)
-    list(APPEND CEF_CXX_COMPILER_FLAGS
+    list(APPEND PROJECT_CXX_COMPILER_FLAGS
       -Wno-undefined-var-template   # Don't warn about potentially uninstantiated static members
       )
   endif()
 
   CHECK_C_COMPILER_FLAG(-Wno-unused-local-typedefs COMPILER_SUPPORTS_NO_UNUSED_LOCAL_TYPEDEFS)
   if(COMPILER_SUPPORTS_NO_UNUSED_LOCAL_TYPEDEFS)
-    list(APPEND CEF_C_COMPILER_FLAGS
+    list(APPEND PROJECT_C_COMPILER_FLAGS
       -Wno-unused-local-typedefs  # Don't warn about unused local typedefs
       )
   endif()
 
   CHECK_CXX_COMPILER_FLAG(-Wno-literal-suffix COMPILER_SUPPORTS_NO_LITERAL_SUFFIX)
   if(COMPILER_SUPPORTS_NO_LITERAL_SUFFIX)
-    list(APPEND CEF_CXX_COMPILER_FLAGS
+    list(APPEND PROJECT_CXX_COMPILER_FLAGS
       -Wno-literal-suffix         # Don't warn about invalid suffixes on literals
       )
   endif()
 
   CHECK_CXX_COMPILER_FLAG(-Wno-narrowing COMPILER_SUPPORTS_NO_NARROWING)
   if(COMPILER_SUPPORTS_NO_NARROWING)
-    list(APPEND CEF_CXX_COMPILER_FLAGS
+    list(APPEND PROJECT_CXX_COMPILER_FLAGS
       -Wno-narrowing              # Don't warn about type narrowing
       )
   endif()
 
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    list(APPEND CEF_CXX_COMPILER_FLAGS
+    list(APPEND PROJECT_CXX_COMPILER_FLAGS
       -Wno-attributes             # The cfi-icall attribute is not supported by the GNU C++ compiler
       )
   endif()
 
   if(PROJECT_ARCH STREQUAL "x86_64")
     # 64-bit architecture.
-    list(APPEND CEF_COMPILER_FLAGS
+    list(APPEND PROJECT_COMPILER_FLAGS
       -m64
       -march=x86-64
       )
-    list(APPEND CEF_LINKER_FLAGS
+    list(APPEND PROJECT_LINKER_FLAGS
       -m64
       )
   elseif(PROJECT_ARCH STREQUAL "x86")
     # 32-bit architecture.
-    list(APPEND CEF_COMPILER_FLAGS
+    list(APPEND PROJECT_COMPILER_FLAGS
       -msse2
       -mfpmath=sse
       -mmmx
       -m32
       )
-    list(APPEND CEF_LINKER_FLAGS
+    list(APPEND PROJECT_LINKER_FLAGS
       -m32
       )
   endif()
 
   # Standard libraries.
-  set(CEF_STANDARD_LIBS
+  set(PROJECT_STANDARD_LIBS
     X11
     )
 
-  # CEF directory paths.
-  set(CEF_RESOURCE_DIR        "${_CEF_ROOT}/Resources")
-  set(CEF_BINARY_DIR          "${_CEF_ROOT}/${CMAKE_BUILD_TYPE}")
-  set(CEF_BINARY_DIR_DEBUG    "${_CEF_ROOT}/Debug")
-  set(CEF_BINARY_DIR_RELEASE  "${_CEF_ROOT}/Release")
+  # # CEF directory paths.
+  # set(PROJECT_RESOURCE_DIR        "${_PROJECT_ROOT}/Resources")
+  # set(PROJECT_BINARY_DIR          "${_PROJECT_ROOT}/${CMAKE_BUILD_TYPE}")
+  # set(PROJECT_BINARY_DIR_DEBUG    "${_PROJECT_ROOT}/Debug")
+  # set(PROJECT_BINARY_DIR_RELEASE  "${_PROJECT_ROOT}/Release")
 
   # CEF library paths.
-  set(CEF_LIB_DEBUG   "${CEF_BINARY_DIR_DEBUG}/libcef.so")
-  set(CEF_LIB_RELEASE "${CEF_BINARY_DIR_RELEASE}/libcef.so")
+  # set(PROJECT_LIB_DEBUG   "${PROJECT_BINARY_DIR_DEBUG}/libcef.so")
+  # set(PROJECT_LIB_RELEASE "${PROJECT_BINARY_DIR_RELEASE}/libcef.so")
 
   # List of CEF binary files.
-  set(CEF_BINARY_FILES
-    chrome-sandbox
-    libcef.so
-    libEGL.so
-    libGLESv2.so
-    natives_blob.bin
-    snapshot_blob.bin
-    v8_context_snapshot.bin
-    swiftshader
-    )
+  # set(PROJECT_BINARY_FILES
+  #   chrome-sandbox
+  #   libcef.so
+  #   libEGL.so
+  #   libGLESv2.so
+  #   natives_blob.bin
+  #   snapshot_blob.bin
+  #   v8_context_snapshot.bin
+  #   swiftshader
+  #   )
 
-  # List of CEF resource files.
-  set(CEF_RESOURCE_FILES
-    cef.pak
-    cef_100_percent.pak
-    cef_200_percent.pak
-    cef_extensions.pak
-    devtools_resources.pak
-    icudtl.dat
-    locales
-    )
-
-  if(USE_SANDBOX)
-    list(APPEND CEF_COMPILER_DEFINES
-      CEF_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
-      )
-  endif()
+  # # List of CEF resource files.
+  # set(PROJECT_RESOURCE_FILES
+  #   cef.pak
+  #   PROJECT_100_percent.pak
+  #   PROJECT_200_percent.pak
+  #   PROJECT_extensions.pak
+  #   devtools_resources.pak
+  #   icudtl.dat
+  #   locales
+  #   )
 endif()
 
 
@@ -235,9 +224,9 @@ endif()
 
 if(OS_MACOSX)
   # Platform-specific compiler/linker flags.
-  # See also Xcode target properties in cef_macros.cmake.
-  set(CEF_LIBTYPE SHARED)
-  list(APPEND CEF_COMPILER_FLAGS
+  # See also Xcode target properties in PROJECT_macros.cmake.
+  set(PROJECT_LIBTYPE SHARED)
+  list(APPEND PROJECT_COMPILER_FLAGS
     -fno-strict-aliasing            # Avoid assumptions regarding non-aliasing of objects of different types
     -fstack-protector               # Protect some vulnerable functions from stack-smashing (security feature)
     -funwind-tables                 # Support stack unwinding for backtrace()
@@ -250,10 +239,10 @@ if(OS_MACOSX)
     -Wno-missing-field-initializers # Don't warn about missing field initializers
     -Wno-unused-parameter           # Don't warn about unused parameters
     )
-  list(APPEND CEF_C_COMPILER_FLAGS
+  list(APPEND PROJECT_C_COMPILER_FLAGS
     -std=c99                        # Use the C99 language standard
     )
-  list(APPEND CEF_CXX_COMPILER_FLAGS
+  list(APPEND PROJECT_CXX_COMPILER_FLAGS
     -fno-exceptions                 # Disable exceptions
     -fno-rtti                       # Disable real-time type information
     -fno-threadsafe-statics         # Don't generate thread-safe statics
@@ -263,19 +252,19 @@ if(OS_MACOSX)
     -Wno-narrowing                  # Don't warn about type narrowing
     -Wsign-compare                  # Warn about mixed signed/unsigned type comparisons
     )
-  list(APPEND CEF_COMPILER_FLAGS_DEBUG
+  list(APPEND PROJECT_COMPILER_FLAGS_DEBUG
     -O0                             # Disable optimizations
     -g                              # Generate debug information
     )
-  list(APPEND CEF_COMPILER_FLAGS_RELEASE
+  list(APPEND PROJECT_COMPILER_FLAGS_RELEASE
     -O3                             # Optimize for maximum speed plus a few extras
     )
-  list(APPEND CEF_LINKER_FLAGS
+  list(APPEND PROJECT_LINKER_FLAGS
     -Wl,-search_paths_first         # Search for static or shared library versions in the same pass
     -Wl,-ObjC                       # Support creation of ObjC static libraries
     -Wl,-pie                        # Generate position-independent code suitable for executables only
     )
-  list(APPEND CEF_LINKER_FLAGS_RELEASE
+  list(APPEND PROJECT_LINKER_FLAGS_RELEASE
     -Wl,-dead_strip                 # Strip dead code
     )
 
@@ -283,13 +272,13 @@ if(OS_MACOSX)
 
   CHECK_CXX_COMPILER_FLAG(-Wno-undefined-var-template COMPILER_SUPPORTS_NO_UNDEFINED_VAR_TEMPLATE)
   if(COMPILER_SUPPORTS_NO_UNDEFINED_VAR_TEMPLATE)
-    list(APPEND CEF_CXX_COMPILER_FLAGS
+    list(APPEND PROJECT_CXX_COMPILER_FLAGS
       -Wno-undefined-var-template   # Don't warn about potentially uninstantiated static members
       )
   endif()
 
   # Standard libraries.
-  set(CEF_STANDARD_LIBS
+  set(PROJECT_STANDARD_LIBS
     -lpthread
     "-framework Cocoa"
     "-framework AppKit"
@@ -305,11 +294,11 @@ if(OS_MACOSX)
   endforeach()
 
   # Target SDK.
-  set(CEF_TARGET_SDK               "10.9")
-  list(APPEND CEF_COMPILER_FLAGS
-    -mmacosx-version-min=${CEF_TARGET_SDK}
+  set(PROJECT_TARGET_SDK               "10.9")
+  list(APPEND PROJECT_COMPILER_FLAGS
+    -mmacosx-version-min=${PROJECT_TARGET_SDK}
   )
-  set(CMAKE_OSX_DEPLOYMENT_TARGET  ${CEF_TARGET_SDK})
+  set(CMAKE_OSX_DEPLOYMENT_TARGET  ${PROJECT_TARGET_SDK})
 
   # Target architecture.
   if(PROJECT_ARCH STREQUAL "x86_64")
@@ -319,19 +308,19 @@ if(OS_MACOSX)
   endif()
 
   # CEF directory paths.
-  set(CEF_BINARY_DIR          "${_CEF_ROOT}/$<CONFIGURATION>")
-  set(CEF_BINARY_DIR_DEBUG    "${_CEF_ROOT}/Debug")
-  set(CEF_BINARY_DIR_RELEASE  "${_CEF_ROOT}/Release")
+  # set(PROJECT_BINARY_DIR          "${_PROJECT_ROOT}/$<CONFIGURATION>")
+  # set(PROJECT_BINARY_DIR_DEBUG    "${_PROJECT_ROOT}/Debug")
+  # set(PROJECT_BINARY_DIR_RELEASE  "${_PROJECT_ROOT}/Release")
 
-  if(USE_SANDBOX)
-    list(APPEND CEF_COMPILER_DEFINES
-      CEF_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
-      )
+  # if(USE_SANDBOX)
+  #   list(APPEND PROJECT_COMPILER_DEFINES
+  #     PROJECT_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
+  #     )
 
-    # CEF sandbox library paths.
-    set(CEF_SANDBOX_LIB_DEBUG "${CEF_BINARY_DIR_DEBUG}/cef_sandbox.a")
-    set(CEF_SANDBOX_LIB_RELEASE "${CEF_BINARY_DIR_RELEASE}/cef_sandbox.a")
-  endif()
+  #   # CEF sandbox library paths.
+  #   set(PROJECT_SANDBOX_LIB_DEBUG "${PROJECT_BINARY_DIR_DEBUG}/PROJECT_sandbox.a")
+  #   set(PROJECT_SANDBOX_LIB_RELEASE "${PROJECT_BINARY_DIR_RELEASE}/PROJECT_sandbox.a")
+  # endif()
 endif()
 
 
@@ -349,7 +338,7 @@ if(OS_WINDOWS)
   endif()
 
   if(USE_SANDBOX)
-    # Check if the current MSVC version is compatible with the cef_sandbox.lib
+    # Check if the current MSVC version is compatible with the PROJECT_sandbox.lib
     # static library. For a list of all version numbers see
     # https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B#Internal_version_numbering
     list(APPEND supported_msvc_versions
@@ -360,6 +349,7 @@ if(OS_WINDOWS)
       1913  # VS2017 version 15.6
       1914  # VS2017 version 15.7
       1915  # VS2017 version 15.8
+      1920
       )
     list(FIND supported_msvc_versions ${MSVC_VERSION} _index)
     if (${_index} EQUAL -1)
@@ -369,18 +359,18 @@ if(OS_WINDOWS)
   endif()
 
   # Consumers who run into LNK4099 warnings can pass /Z7 instead (see issue #385).
-  set(CEF_DEBUG_INFO_FLAG "/Zi" CACHE STRING "Optional flag specifying specific /Z flag to use")
+  set(PROJECT_DEBUG_INFO_FLAG "/Zi" CACHE STRING "Optional flag specifying specific /Z flag to use")
 
   # Consumers using different runtime types may want to pass different flags
-  set(CEF_RUNTIME_LIBRARY_FLAG "/MT" CACHE STRING "Optional flag specifying which runtime to use")
-  if (CEF_RUNTIME_LIBRARY_FLAG)
-    list(APPEND CEF_COMPILER_FLAGS_DEBUG ${CEF_RUNTIME_LIBRARY_FLAG}d)
-    list(APPEND CEF_COMPILER_FLAGS_RELEASE ${CEF_RUNTIME_LIBRARY_FLAG})
+  set(PROJECT_RUNTIME_LIBRARY_FLAG "/MT" CACHE STRING "Optional flag specifying which runtime to use")
+  if (PROJECT_RUNTIME_LIBRARY_FLAG)
+    list(APPEND PROJECT_COMPILER_FLAGS_DEBUG ${PROJECT_RUNTIME_LIBRARY_FLAG}d)
+    list(APPEND PROJECT_COMPILER_FLAGS_RELEASE ${PROJECT_RUNTIME_LIBRARY_FLAG})
   endif()
 
   # Platform-specific compiler/linker flags.
-  set(CEF_LIBTYPE STATIC)
-  list(APPEND CEF_COMPILER_FLAGS
+  set(PROJECT_LIBTYPE STATIC)
+  list(APPEND PROJECT_COMPILER_FLAGS
     /MP           # Multiprocess compilation
     /Gy           # Enable function-level linking
     /GR-          # Disable run-time type information
@@ -394,25 +384,25 @@ if(OS_WINDOWS)
     /wd4701       # Ignore "potentially uninitialized local variable" warning
     /wd4702       # Ignore "unreachable code" warning
     /wd4996       # Ignore "function or variable may be unsafe" warning
-    ${CEF_DEBUG_INFO_FLAG}
+    ${PROJECT_DEBUG_INFO_FLAG}
     )
-  list(APPEND CEF_COMPILER_FLAGS_DEBUG
+  list(APPEND PROJECT_COMPILER_FLAGS_DEBUG
     /RTC1         # Disable optimizations
     /Od           # Enable basic run-time checks
     )
-  list(APPEND CEF_COMPILER_FLAGS_RELEASE
+  list(APPEND PROJECT_COMPILER_FLAGS_RELEASE
     /O2           # Optimize for maximum speed
     /Ob2          # Inline any suitable function
     /GF           # Enable string pooling
     )
-  list(APPEND CEF_LINKER_FLAGS_DEBUG
+  list(APPEND PROJECT_LINKER_FLAGS_DEBUG
     /DEBUG        # Generate debug information
     )
-  list(APPEND CEF_EXE_LINKER_FLAGS
+  list(APPEND PROJECT_EXE_LINKER_FLAGS
     /MANIFEST:NO        # No default manifest (see ADD_WINDOWS_MANIFEST macro usage)
     /LARGEADDRESSAWARE  # Allow 32-bit processes to access 3GB of RAM
     )
-  list(APPEND CEF_COMPILER_DEFINES
+  list(APPEND PROJECT_COMPILER_DEFINES
     WIN32 _WIN32 _WINDOWS             # Windows platform
     UNICODE _UNICODE                  # Unicode build
     WINVER=0x0601 _WIN32_WINNT=0x601  # Targeting Windows 7
@@ -420,71 +410,71 @@ if(OS_WINDOWS)
     WIN32_LEAN_AND_MEAN               # Exclude less common API declarations
     _HAS_EXCEPTIONS=0                 # Disable exceptions
     )
-  list(APPEND CEF_COMPILER_DEFINES_RELEASE
+  list(APPEND PROJECT_COMPILER_DEFINES_RELEASE
     NDEBUG _NDEBUG                    # Not a debug build
     )
 
   # Standard libraries.
-  set(CEF_STANDARD_LIBS
+  set(PROJECT_STANDARD_LIBS
     comctl32.lib
     rpcrt4.lib
     shlwapi.lib
     ws2_32.lib
     )
 
-  # CEF directory paths.
-  set(CEF_RESOURCE_DIR        "${_CEF_ROOT}/Resources")
-  set(CEF_BINARY_DIR          "${_CEF_ROOT}/$<CONFIGURATION>")
-  set(CEF_BINARY_DIR_DEBUG    "${_CEF_ROOT}/Debug")
-  set(CEF_BINARY_DIR_RELEASE  "${_CEF_ROOT}/Release")
+  # # CEF directory paths.
+  # set(PROJECT_RESOURCE_DIR        "${_PROJECT_ROOT}/Resources")
+  # set(PROJECT_BINARY_DIR          "${_PROJECT_ROOT}/$<CONFIGURATION>")
+  # set(PROJECT_BINARY_DIR_DEBUG    "${_PROJECT_ROOT}/Debug")
+  # set(PROJECT_BINARY_DIR_RELEASE  "${_PROJECT_ROOT}/Release")
 
-  # CEF library paths.
-  set(CEF_LIB_DEBUG   "${CEF_BINARY_DIR_DEBUG}/libcef.lib")
-  set(CEF_LIB_RELEASE "${CEF_BINARY_DIR_RELEASE}/libcef.lib")
+  # # CEF library paths.
+  # set(PROJECT_LIB_DEBUG   "${PROJECT_BINARY_DIR_DEBUG}/libcef.lib")
+  # set(PROJECT_LIB_RELEASE "${PROJECT_BINARY_DIR_RELEASE}/libcef.lib")
 
-  # List of CEF binary files.
-  set(CEF_BINARY_FILES
-    chrome_elf.dll
-    d3dcompiler_47.dll
-    libcef.dll
-    libEGL.dll
-    libGLESv2.dll
-    natives_blob.bin
-    snapshot_blob.bin
-    v8_context_snapshot.bin
-    swiftshader
-    )
+  # # List of CEF binary files.
+  # set(PROJECT_BINARY_FILES
+  #   chrome_elf.dll
+  #   d3dcompiler_47.dll
+  #   libcef.dll
+  #   libEGL.dll
+  #   libGLESv2.dll
+  #   natives_blob.bin
+  #   snapshot_blob.bin
+  #   v8_context_snapshot.bin
+  #   swiftshader
+  #   )
 
-  # List of CEF resource files.
-  set(CEF_RESOURCE_FILES
-    cef.pak
-    cef_100_percent.pak
-    cef_200_percent.pak
-    cef_extensions.pak
-    devtools_resources.pak
-    icudtl.dat
-    locales
-    )
+  # # List of CEF resource files.
+  # set(PROJECT_RESOURCE_FILES
+  #   cef.pak
+  #   PROJECT_100_percent.pak
+  #   PROJECT_200_percent.pak
+  #   PROJECT_extensions.pak
+  #   devtools_resources.pak
+  #   icudtl.dat
+  #   locales
+  #   )
 
-  if(USE_SANDBOX)
-    list(APPEND CEF_COMPILER_DEFINES
-      PSAPI_VERSION=1   # Required by cef_sandbox.lib
-      CEF_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
-      )
+  # if(USE_SANDBOX)
+  #   list(APPEND PROJECT_COMPILER_DEFINES
+  #     PSAPI_VERSION=1   # Required by PROJECT_sandbox.lib
+  #     PROJECT_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
+  #     )
 
-    # Libraries required by cef_sandbox.lib.
-    set(CEF_SANDBOX_STANDARD_LIBS
-      dbghelp.lib
-      psapi.lib
-      version.lib
-      wbemuuid.lib
-      winmm.lib
-      )
+  #   # Libraries required by PROJECT_sandbox.lib.
+  #   set(PROJECT_SANDBOX_STANDARD_LIBS
+  #     dbghelp.lib
+  #     psapi.lib
+  #     version.lib
+  #     wbemuuid.lib
+  #     winmm.lib
+  #     )
 
-    # CEF sandbox library paths.
-    set(CEF_SANDBOX_LIB_DEBUG "${CEF_BINARY_DIR_DEBUG}/cef_sandbox.lib")
-    set(CEF_SANDBOX_LIB_RELEASE "${CEF_BINARY_DIR_RELEASE}/cef_sandbox.lib")
-  endif()
+  #   # CEF sandbox library paths.
+  #   set(PROJECT_SANDBOX_LIB_DEBUG "${PROJECT_BINARY_DIR_DEBUG}/PROJECT_sandbox.lib")
+  #   set(PROJECT_SANDBOX_LIB_RELEASE "${PROJECT_BINARY_DIR_RELEASE}/PROJECT_sandbox.lib")
+  # endif()
 
   # Configure use of ATL.
   option(USE_ATL "Enable or disable use of ATL." ON)
@@ -514,8 +504,8 @@ if(OS_WINDOWS)
   endif()
 
   if(USE_ATL)
-    list(APPEND CEF_COMPILER_DEFINES
-      CEF_USE_ATL   # Used by apps to test if ATL support is enabled
+    list(APPEND PROJECT_COMPILER_DEFINES
+      PROJECT_USE_ATL   # Used by apps to test if ATL support is enabled
       )
   endif()
 endif()
