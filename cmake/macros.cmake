@@ -2,9 +2,9 @@
 # Shared macros.
 #
 
-# Print the current CEF configuration.
+# Print the current configuration.
 macro(PRINT_CONFIG)
-  message(STATUS "*** CEF CONFIGURATION SETTINGS ***")
+  message(STATUS "*** CONFIGURATION SETTINGS ***")
   message(STATUS "Generator:                    ${CMAKE_GENERATOR}")
   message(STATUS "Platform:                     ${CMAKE_SYSTEM_NAME}")
   message(STATUS "Project architecture:         ${PROJECT_ARCH}")
@@ -13,45 +13,31 @@ macro(PRINT_CONFIG)
     message(STATUS "Build type:                   ${CMAKE_BUILD_TYPE}")
   endif()
 
-  message(STATUS "Binary distribution root:     ${_CEF_ROOT}")
-
   if(OS_MACOSX)
     message(STATUS "Base SDK:                     ${CMAKE_OSX_SYSROOT}")
-    message(STATUS "Target SDK:                   ${CEF_TARGET_SDK}")
+    message(STATUS "Target SDK:                   ${PROJECT_TARGET_SDK}")
   endif()
 
   if(OS_WINDOWS)
     message(STATUS "Visual Studio ATL support:    ${USE_ATL}")
   endif()
 
-  message(STATUS "CEF sandbox:                  ${USE_SANDBOX}")
+  message(STATUS "Compile defines:              ${PROJECT_COMPILER_DEFINES}")
+  message(STATUS "Compile defines (Debug):      ${PROJECT_COMPILER_DEFINES_DEBUG}")
+  message(STATUS "Compile defines (Release):    ${PROJECT_COMPILER_DEFINES_RELEASE}")
+  message(STATUS "C compile flags:              ${PROJECT_COMPILER_FLAGS} ${PROJECT_C_COMPILER_FLAGS}")
+  message(STATUS "C compile flags (Debug):      ${PROJECT_COMPILER_FLAGS_DEBUG} ${PROJECT_C_COMPILER_FLAGS_DEBUG}")
+  message(STATUS "C compile flags (Release):    ${PROJECT_COMPILER_FLAGS_RELEASE} ${PROJECT_C_COMPILER_FLAGS_RELEASE}")
+  message(STATUS "C++ compile flags:            ${PROJECT_COMPILER_FLAGS} ${PROJECT_CXX_COMPILER_FLAGS}")
+  message(STATUS "C++ compile flags (Debug):    ${PROJECT_COMPILER_FLAGS_DEBUG} ${PROJECT_CXX_COMPILER_FLAGS_DEBUG}")
+  message(STATUS "C++ compile flags (Release):  ${PROJECT_COMPILER_FLAGS_RELEASE} ${PROJECT_CXX_COMPILER_FLAGS_RELEASE}")
+  message(STATUS "Exe link flags:               ${PROJECT_LINKER_FLAGS} ${PROJECT_EXE_LINKER_FLAGS}")
+  message(STATUS "Exe link flags (Debug):       ${PROJECT_LINKER_FLAGS_DEBUG} ${PROJECT_EXE_LINKER_FLAGS_DEBUG}")
+  message(STATUS "Exe link flags (Release):     ${PROJECT_LINKER_FLAGS_RELEASE} ${PROJECT_EXE_LINKER_FLAGS_RELEASE}")
+  message(STATUS "Shared link flags:            ${PROJECT_LINKER_FLAGS} ${PROJECT_SHARED_LINKER_FLAGS}")
+  message(STATUS "Shared link flags (Debug):    ${PROJECT_LINKER_FLAGS_DEBUG} ${PROJECT_SHARED_LINKER_FLAGS_DEBUG}")
+  message(STATUS "Shared link flags (Release):  ${PROJECT_LINKER_FLAGS_RELEASE} ${PROJECT_SHARED_LINKER_FLAGS_RELEASE}")
 
-  set(_libraries ${CEF_STANDARD_LIBS})
-  if(OS_WINDOWS AND USE_SANDBOX)
-    list(APPEND _libraries ${CEF_SANDBOX_STANDARD_LIBS})
-  endif()
-  message(STATUS "Standard libraries:           ${_libraries}")
-
-  message(STATUS "Compile defines:              ${CEF_COMPILER_DEFINES}")
-  message(STATUS "Compile defines (Debug):      ${CEF_COMPILER_DEFINES_DEBUG}")
-  message(STATUS "Compile defines (Release):    ${CEF_COMPILER_DEFINES_RELEASE}")
-  message(STATUS "C compile flags:              ${CEF_COMPILER_FLAGS} ${CEF_C_COMPILER_FLAGS}")
-  message(STATUS "C compile flags (Debug):      ${CEF_COMPILER_FLAGS_DEBUG} ${CEF_C_COMPILER_FLAGS_DEBUG}")
-  message(STATUS "C compile flags (Release):    ${CEF_COMPILER_FLAGS_RELEASE} ${CEF_C_COMPILER_FLAGS_RELEASE}")
-  message(STATUS "C++ compile flags:            ${CEF_COMPILER_FLAGS} ${CEF_CXX_COMPILER_FLAGS}")
-  message(STATUS "C++ compile flags (Debug):    ${CEF_COMPILER_FLAGS_DEBUG} ${CEF_CXX_COMPILER_FLAGS_DEBUG}")
-  message(STATUS "C++ compile flags (Release):  ${CEF_COMPILER_FLAGS_RELEASE} ${CEF_CXX_COMPILER_FLAGS_RELEASE}")
-  message(STATUS "Exe link flags:               ${CEF_LINKER_FLAGS} ${CEF_EXE_LINKER_FLAGS}")
-  message(STATUS "Exe link flags (Debug):       ${CEF_LINKER_FLAGS_DEBUG} ${CEF_EXE_LINKER_FLAGS_DEBUG}")
-  message(STATUS "Exe link flags (Release):     ${CEF_LINKER_FLAGS_RELEASE} ${CEF_EXE_LINKER_FLAGS_RELEASE}")
-  message(STATUS "Shared link flags:            ${CEF_LINKER_FLAGS} ${CEF_SHARED_LINKER_FLAGS}")
-  message(STATUS "Shared link flags (Debug):    ${CEF_LINKER_FLAGS_DEBUG} ${CEF_SHARED_LINKER_FLAGS_DEBUG}")
-  message(STATUS "Shared link flags (Release):  ${CEF_LINKER_FLAGS_RELEASE} ${CEF_SHARED_LINKER_FLAGS_RELEASE}")
-
-  if(OS_LINUX OR OS_WINDOWS)
-    message(STATUS "CEF Binary files:             ${CEF_BINARY_FILES}")
-    message(STATUS "CEF Resource files:           ${CEF_RESOURCE_FILES}")
-  endif()
 endmacro()
 
 # Append platform specific sources to a list of sources.
@@ -71,17 +57,17 @@ macro(APPEND_PLATFORM_SOURCES name_of_list)
 endmacro()
 
 # Determine the target output directory based on platform and generator.
-macro(SET_CEF_TARGET_OUT_DIR)
+macro(SET_PROJECT_TARGET_OUT_DIR)
   if(GEN_NINJA OR GEN_MAKEFILES)
     # By default Ninja and Make builds don't create a subdirectory named after
     # the configuration.
-    set(CEF_TARGET_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+    set(PROJECT_TARGET_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 
     # Output binaries (executables, libraries) to the correct directory.
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CEF_TARGET_OUT_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CEF_TARGET_OUT_DIR})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_TARGET_OUT_DIR})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_TARGET_OUT_DIR})
   else()
-    set(CEF_TARGET_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>")
+    set(PROJECT_TARGET_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>")
   endif()
 endmacro()
 
@@ -147,11 +133,11 @@ macro(FIND_LINUX_LIBRARIES libraries)
   separate_arguments(FLL_LIBS)
 
   # Update build variables.
-  list(APPEND CEF_C_COMPILER_FLAGS    ${FLL_CFLAGS})
-  list(APPEND CEF_CXX_COMPILER_FLAGS  ${FLL_CFLAGS})
-  list(APPEND CEF_EXE_LINKER_FLAGS    ${FLL_LDFLAGS})
-  list(APPEND CEF_SHARED_LINKER_FLAGS ${FLL_LDFLAGS})
-  list(APPEND CEF_STANDARD_LIBS       ${FLL_LIBS})
+  list(APPEND PROJECT_C_COMPILER_FLAGS    ${FLL_CFLAGS})
+  list(APPEND PROJECT_CXX_COMPILER_FLAGS  ${FLL_CFLAGS})
+  list(APPEND PROJECT_EXE_LINKER_FLAGS    ${FLL_LDFLAGS})
+  list(APPEND PROJECT_SHARED_LINKER_FLAGS ${FLL_LDFLAGS})
+  list(APPEND PROJECT_STANDARD_LIBS       ${FLL_LIBS})
 endmacro()
 
 # Set SUID permissions on the specified executable.
@@ -235,7 +221,7 @@ macro(ADD_WINDOWS_MANIFEST manifest_path target extension)
     POST_BUILD
     COMMAND "mt.exe" -nologo
             -manifest \"${manifest_path}/${target}.${extension}.manifest\" \"${manifest_path}/compatibility.manifest\"
-            -outputresource:"${CEF_TARGET_OUT_DIR}/${target}.${extension}"\;\#1
+            -outputresource:"${PROJECT_TARGET_OUT_DIR}/${target}.${extension}"\;\#1
     COMMENT "Adding manifest..."
     )
 endmacro()
@@ -250,7 +236,7 @@ endif(OS_WINDOWS)
 # Add a logical target that can be used to link the specified libraries into an
 # executable target.
 macro(ADD_LOGICAL_TARGET target debug_lib release_lib)
-  add_library(${target} ${CEF_LIBTYPE} IMPORTED)
+  add_library(${target} ${PROJECT_LIBTYPE} IMPORTED)
   set_target_properties(${target} PROPERTIES
     IMPORTED_LOCATION "${release_lib}"
     IMPORTED_LOCATION_DEBUG "${debug_lib}"
@@ -262,29 +248,29 @@ endmacro()
 # SET_EXECUTABLE_TARGET_PROPERTIES() instead of calling this macro directly.
 macro(SET_COMMON_TARGET_PROPERTIES target)
   # Compile flags.
-  target_compile_options(${target} PRIVATE ${CEF_COMPILER_FLAGS} ${CEF_CXX_COMPILER_FLAGS})
-  target_compile_options(${target} PRIVATE $<$<CONFIG:Debug>:${CEF_COMPILER_FLAGS_DEBUG} ${CEF_CXX_COMPILER_FLAGS_DEBUG}>)
-  target_compile_options(${target} PRIVATE $<$<CONFIG:Release>:${CEF_COMPILER_FLAGS_RELEASE} ${CEF_CXX_COMPILER_FLAGS_RELEASE}>)
+  target_compile_options(${target} PRIVATE ${PROJECT_COMPILER_FLAGS} ${PROJECT_CXX_COMPILER_FLAGS})
+  target_compile_options(${target} PRIVATE $<$<CONFIG:Debug>:${PROJECT_COMPILER_FLAGS_DEBUG} ${PROJECT_CXX_COMPILER_FLAGS_DEBUG}>)
+  target_compile_options(${target} PRIVATE $<$<CONFIG:Release>:${PROJECT_COMPILER_FLAGS_RELEASE} ${PROJECT_CXX_COMPILER_FLAGS_RELEASE}>)
 
   # Compile definitions.
-  target_compile_definitions(${target} PRIVATE ${CEF_COMPILER_DEFINES})
-  target_compile_definitions(${target} PRIVATE $<$<CONFIG:Debug>:${CEF_COMPILER_DEFINES_DEBUG}>)
-  target_compile_definitions(${target} PRIVATE $<$<CONFIG:Release>:${CEF_COMPILER_DEFINES_RELEASE}>)
+  target_compile_definitions(${target} PRIVATE ${PROJECT_COMPILER_DEFINES})
+  target_compile_definitions(${target} PRIVATE $<$<CONFIG:Debug>:${PROJECT_COMPILER_DEFINES_DEBUG}>)
+  target_compile_definitions(${target} PRIVATE $<$<CONFIG:Release>:${PROJECT_COMPILER_DEFINES_RELEASE}>)
 
   # Include directories.
-  target_include_directories(${target} PRIVATE ${CEF_INCLUDE_PATH})
+  target_include_directories(${target} PRIVATE ${PROJECT_INCLUDE_PATH})
 
   # Linker flags.
-  if(CEF_LINKER_FLAGS)
-    string(REPLACE ";" " " _flags_str "${CEF_LINKER_FLAGS}")
+  if(PROJECT_LINKER_FLAGS)
+    string(REPLACE ";" " " _flags_str "${PROJECT_LINKER_FLAGS}")
     set_property(TARGET ${target} PROPERTY LINK_FLAGS ${_flags_str})
   endif()
-  if(CEF_LINKER_FLAGS_DEBUG)
-    string(REPLACE ";" " " _flags_str "${CEF_LINKER_FLAGS_DEBUG}")
+  if(PROJECT_LINKER_FLAGS_DEBUG)
+    string(REPLACE ";" " " _flags_str "${PROJECT_LINKER_FLAGS_DEBUG}")
     set_property(TARGET ${target} PROPERTY LINK_FLAGS_DEBUG ${_flags_str})
   endif()
-  if(CEF_LINKER_FLAGS_RELEASE)
-    string(REPLACE ";" " " _flags_str "${CEF_LINKER_FLAGS_RELEASE}")
+  if(PROJECT_LINKER_FLAGS_RELEASE)
+    string(REPLACE ";" " " _flags_str "${PROJECT_LINKER_FLAGS_RELEASE}")
     set_property(TARGET ${target} PROPERTY LINK_FLAGS_RELEASE ${_flags_str})
   endif()
 
@@ -317,40 +303,21 @@ macro(SET_COMMON_TARGET_PROPERTIES target)
   endif()
 endmacro()
 
-# Set library-specific properties.
-macro(SET_LIBRARY_TARGET_PROPERTIES target)
+# Set executable/library-specific properties.
+macro(SET_TARGET_PROPERTIES target)
   SET_COMMON_TARGET_PROPERTIES(${target})
 
   # Shared library linker flags.
-  if(CEF_SHARED_LINKER_FLAGS)
-    string(REPLACE ";" " " _flags_str "${CEF_SHARED_LINKER_FLAGS}")
+  if(PROJECT_SHARED_LINKER_FLAGS)
+    string(REPLACE ";" " " _flags_str "${PROJECT_SHARED_LINKER_FLAGS}")
     set_property(TARGET ${target} PROPERTY LINK_FLAGS ${_flags_str})
   endif()
-  if(CEF_SHARED_LINKER_FLAGS_DEBUG)
-    string(REPLACE ";" " " _flags_str "${CEF_SHARED_LINKER_FLAGS_DEBUG}")
+  if(PROJECT_SHARED_LINKER_FLAGS_DEBUG)
+    string(REPLACE ";" " " _flags_str "${PROJECT_SHARED_LINKER_FLAGS_DEBUG}")
     set_property(TARGET ${target} PROPERTY LINK_FLAGS_DEBUG ${_flags_str})
   endif()
-  if(CEF_SHARED_LINKER_FLAGS_RELEASE)
-    string(REPLACE ";" " " _flags_str "${CEF_SHARED_LINKER_FLAGS_RELEASE}")
-    set_property(TARGET ${target} PROPERTY LINK_FLAGS_RELEASE ${_flags_str})
-  endif()
-endmacro()
-
-# Set executable-specific properties.
-macro(SET_EXECUTABLE_TARGET_PROPERTIES target)
-  SET_COMMON_TARGET_PROPERTIES(${target})
-
-  # Executable linker flags.
-  if(CEF_EXE_LINKER_FLAGS)
-    string(REPLACE ";" " " _flags_str "${CEF_EXE_LINKER_FLAGS}")
-    set_property(TARGET ${target} PROPERTY LINK_FLAGS ${_flags_str})
-  endif()
-  if(CEF_EXE_LINKER_FLAGS_DEBUG)
-    string(REPLACE ";" " " _flags_str "${CEF_EXE_LINKER_FLAGS_DEBUG}")
-    set_property(TARGET ${target} PROPERTY LINK_FLAGS_DEBUG ${_flags_str})
-  endif()
-  if(CEF_EXE_LINKER_FLAGS_RELEASE)
-    string(REPLACE ";" " " _flags_str "${CEF_EXE_LINKER_FLAGS_RELEASE}")
+  if(PROJECT_SHARED_LINKER_FLAGS_RELEASE)
+    string(REPLACE ";" " " _flags_str "${PROJECT_SHARED_LINKER_FLAGS_RELEASE}")
     set_property(TARGET ${target} PROPERTY LINK_FLAGS_RELEASE ${_flags_str})
   endif()
 endmacro()

@@ -1,20 +1,20 @@
-# Append platform specific sources to a list of sources.
-macro(PROJECT_APPEND_PLATFORM_SOURCES name_of_list)
-  if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin" AND ${name_of_list}_MACOSX)
-    list(APPEND ${name_of_list} ${${name_of_list}_MACOSX})
-  endif()
-  if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" AND ${name_of_list}_LINUX)
-    list(APPEND ${name_of_list} ${${name_of_list}_LINUX})
-  endif()
-  if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" AND ${name_of_list}_WINDOWS)
-    list(APPEND ${name_of_list} ${${name_of_list}_WINDOWS})
-  endif()
-endmacro()
+# # Append platform specific sources to a list of sources.
+# macro(APPEND_PLATFORM_SOURCES name_of_list)
+#   if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin" AND ${name_of_list}_MACOSX)
+#     list(APPEND ${name_of_list} ${${name_of_list}_MACOSX})
+#   endif()
+#   if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" AND ${name_of_list}_LINUX)
+#     list(APPEND ${name_of_list} ${${name_of_list}_LINUX})
+#   endif()
+#   if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" AND ${name_of_list}_WINDOWS)
+#     list(APPEND ${name_of_list} ${${name_of_list}_WINDOWS})
+#   endif()
+# endmacro()
 
 set(PROJECT_TARGET cpp_template)
 
 set(PROJECT_SRCS
-  main.cpp
+  src/main.cpp
   )
 
 set(PROJECT_SRCS_LINUX
@@ -29,11 +29,11 @@ set(PROJECT_SRCS_WINDOWS
   #list of files
   )
 
-PROJECT_APPEND_PLATFORM_SOURCES(PROJECT_SRCS)
+APPEND_PLATFORM_SOURCES(PROJECT_SRCS)
 source_group(src FILES ${PROJECT_SRCS})
 
 set(PROJECT_INCS
-  main.h
+  src/main.h
   )
 
 set(PROJECT_INCS_LINUX
@@ -48,11 +48,12 @@ set(PROJECT_INCS_WINDOWS
   #list of files
   )
 
-PROJECT_APPEND_PLATFORM_SOURCES(PROJECT_INCS)  
+APPEND_PLATFORM_SOURCES(PROJECT_INCS)  
 source_group(include FILES ${PROJECT_INCS})
 
 add_executable(${PROJECT_TARGET}
   ${PROJECT_SRCS}
   ${PROJECT_INCS}
   )
-SET_LIBRARY_TARGET_PROPERTIES(${PROJECT_TARGET})
+
+SET_TARGET_PROPERTIES(${PROJECT_TARGET})

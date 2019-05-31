@@ -6,11 +6,10 @@ project(cpp_template)
 
 set_property(GLOBAL PROPERTY OS_FOLDERS ON)
 
-set(PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_ROOT}/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 
-include("${CMAKE_MODULE_PATH}/variables.cmake")
-include("${CMAKE_MODULE_PATH}/macros.cmake")
-include("${CMAKE_MODULE_PATH}/project.cmake")
+include("${CMAKE_MODULE_PATH}/cmake/variables.cmake")
+include("${CMAKE_MODULE_PATH}/cmake/macros.cmake")
+include("${CMAKE_MODULE_PATH}/cmake/project.cmake")
 
 PRINT_CONFIG()

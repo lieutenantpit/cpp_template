@@ -36,14 +36,6 @@ if(NOT CMAKE_BUILD_TYPE AND (GEN_NINJA OR GEN_MAKEFILES))
   message(WARNING "No CMAKE_BUILD_TYPE value selected, using ${CMAKE_BUILD_TYPE}")
 endif()
 
-
-# # Path to the include directory.
-# set(PROJECT_INCLUDE_PATH "${_PROJECT_ROOT}")
-
-# # Path to the libPROJECT_dll_wrapper target.
-# set(PROJECT_LIBPROJECT_DLL_WRAPPER_PATH "${_PROJECT_ROOT}/libPROJECT_dll")
-
-
 # Shared compiler/linker flags.
 list(APPEND COMPILER_DEFINES
   # Allow C++ programs to use stdint.h macros specified in the C99 standard that aren't 
@@ -177,44 +169,6 @@ if(OS_LINUX)
       -m32
       )
   endif()
-
-  # Standard libraries.
-  set(PROJECT_STANDARD_LIBS
-    X11
-    )
-
-  # # CEF directory paths.
-  # set(PROJECT_RESOURCE_DIR        "${_PROJECT_ROOT}/Resources")
-  # set(PROJECT_BINARY_DIR          "${_PROJECT_ROOT}/${CMAKE_BUILD_TYPE}")
-  # set(PROJECT_BINARY_DIR_DEBUG    "${_PROJECT_ROOT}/Debug")
-  # set(PROJECT_BINARY_DIR_RELEASE  "${_PROJECT_ROOT}/Release")
-
-  # CEF library paths.
-  # set(PROJECT_LIB_DEBUG   "${PROJECT_BINARY_DIR_DEBUG}/libcef.so")
-  # set(PROJECT_LIB_RELEASE "${PROJECT_BINARY_DIR_RELEASE}/libcef.so")
-
-  # List of CEF binary files.
-  # set(PROJECT_BINARY_FILES
-  #   chrome-sandbox
-  #   libcef.so
-  #   libEGL.so
-  #   libGLESv2.so
-  #   natives_blob.bin
-  #   snapshot_blob.bin
-  #   v8_context_snapshot.bin
-  #   swiftshader
-  #   )
-
-  # # List of CEF resource files.
-  # set(PROJECT_RESOURCE_FILES
-  #   cef.pak
-  #   PROJECT_100_percent.pak
-  #   PROJECT_200_percent.pak
-  #   PROJECT_extensions.pak
-  #   devtools_resources.pak
-  #   icudtl.dat
-  #   locales
-  #   )
 endif()
 
 
@@ -306,21 +260,6 @@ if(OS_MACOSX)
   else()
     set(CMAKE_OSX_ARCHITECTURES "i386")
   endif()
-
-  # CEF directory paths.
-  # set(PROJECT_BINARY_DIR          "${_PROJECT_ROOT}/$<CONFIGURATION>")
-  # set(PROJECT_BINARY_DIR_DEBUG    "${_PROJECT_ROOT}/Debug")
-  # set(PROJECT_BINARY_DIR_RELEASE  "${_PROJECT_ROOT}/Release")
-
-  # if(USE_SANDBOX)
-  #   list(APPEND PROJECT_COMPILER_DEFINES
-  #     PROJECT_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
-  #     )
-
-  #   # CEF sandbox library paths.
-  #   set(PROJECT_SANDBOX_LIB_DEBUG "${PROJECT_BINARY_DIR_DEBUG}/PROJECT_sandbox.a")
-  #   set(PROJECT_SANDBOX_LIB_RELEASE "${PROJECT_BINARY_DIR_RELEASE}/PROJECT_sandbox.a")
-  # endif()
 endif()
 
 
@@ -335,27 +274,6 @@ if(OS_WINDOWS)
     set(CMAKE_CXX_FLAGS "")
     set(CMAKE_CXX_FLAGS_DEBUG "")
     set(CMAKE_CXX_FLAGS_RELEASE "")
-  endif()
-
-  if(USE_SANDBOX)
-    # Check if the current MSVC version is compatible with the PROJECT_sandbox.lib
-    # static library. For a list of all version numbers see
-    # https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B#Internal_version_numbering
-    list(APPEND supported_msvc_versions
-      1900  # VS2015 and updates 1, 2, & 3
-      1910  # VS2017 version 15.1 & 15.2
-      1911  # VS2017 version 15.3 & 15.4
-      1912  # VS2017 version 15.5
-      1913  # VS2017 version 15.6
-      1914  # VS2017 version 15.7
-      1915  # VS2017 version 15.8
-      1920
-      )
-    list(FIND supported_msvc_versions ${MSVC_VERSION} _index)
-    if (${_index} EQUAL -1)
-      message(WARNING "CEF sandbox is not compatible with the current MSVC version (${MSVC_VERSION})")
-      set(USE_SANDBOX OFF)
-    endif()
   endif()
 
   # Consumers who run into LNK4099 warnings can pass /Z7 instead (see issue #385).
@@ -421,60 +339,6 @@ if(OS_WINDOWS)
     shlwapi.lib
     ws2_32.lib
     )
-
-  # # CEF directory paths.
-  # set(PROJECT_RESOURCE_DIR        "${_PROJECT_ROOT}/Resources")
-  # set(PROJECT_BINARY_DIR          "${_PROJECT_ROOT}/$<CONFIGURATION>")
-  # set(PROJECT_BINARY_DIR_DEBUG    "${_PROJECT_ROOT}/Debug")
-  # set(PROJECT_BINARY_DIR_RELEASE  "${_PROJECT_ROOT}/Release")
-
-  # # CEF library paths.
-  # set(PROJECT_LIB_DEBUG   "${PROJECT_BINARY_DIR_DEBUG}/libcef.lib")
-  # set(PROJECT_LIB_RELEASE "${PROJECT_BINARY_DIR_RELEASE}/libcef.lib")
-
-  # # List of CEF binary files.
-  # set(PROJECT_BINARY_FILES
-  #   chrome_elf.dll
-  #   d3dcompiler_47.dll
-  #   libcef.dll
-  #   libEGL.dll
-  #   libGLESv2.dll
-  #   natives_blob.bin
-  #   snapshot_blob.bin
-  #   v8_context_snapshot.bin
-  #   swiftshader
-  #   )
-
-  # # List of CEF resource files.
-  # set(PROJECT_RESOURCE_FILES
-  #   cef.pak
-  #   PROJECT_100_percent.pak
-  #   PROJECT_200_percent.pak
-  #   PROJECT_extensions.pak
-  #   devtools_resources.pak
-  #   icudtl.dat
-  #   locales
-  #   )
-
-  # if(USE_SANDBOX)
-  #   list(APPEND PROJECT_COMPILER_DEFINES
-  #     PSAPI_VERSION=1   # Required by PROJECT_sandbox.lib
-  #     PROJECT_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
-  #     )
-
-  #   # Libraries required by PROJECT_sandbox.lib.
-  #   set(PROJECT_SANDBOX_STANDARD_LIBS
-  #     dbghelp.lib
-  #     psapi.lib
-  #     version.lib
-  #     wbemuuid.lib
-  #     winmm.lib
-  #     )
-
-  #   # CEF sandbox library paths.
-  #   set(PROJECT_SANDBOX_LIB_DEBUG "${PROJECT_BINARY_DIR_DEBUG}/PROJECT_sandbox.lib")
-  #   set(PROJECT_SANDBOX_LIB_RELEASE "${PROJECT_BINARY_DIR_RELEASE}/PROJECT_sandbox.lib")
-  # endif()
 
   # Configure use of ATL.
   option(USE_ATL "Enable or disable use of ATL." ON)
