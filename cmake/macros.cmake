@@ -25,15 +25,18 @@ macro(PRINT_CONFIG)
   message(STATUS "Compile defines:              ${PROJECT_COMPILER_DEFINES}")
   message(STATUS "Compile defines (Debug):      ${PROJECT_COMPILER_DEFINES_DEBUG}")
   message(STATUS "Compile defines (Release):    ${PROJECT_COMPILER_DEFINES_RELEASE}")
+
   message(STATUS "C compile flags:              ${PROJECT_COMPILER_FLAGS} ${PROJECT_C_COMPILER_FLAGS}")
   message(STATUS "C compile flags (Debug):      ${PROJECT_COMPILER_FLAGS_DEBUG} ${PROJECT_C_COMPILER_FLAGS_DEBUG}")
   message(STATUS "C compile flags (Release):    ${PROJECT_COMPILER_FLAGS_RELEASE} ${PROJECT_C_COMPILER_FLAGS_RELEASE}")
   message(STATUS "C++ compile flags:            ${PROJECT_COMPILER_FLAGS} ${PROJECT_CXX_COMPILER_FLAGS}")
   message(STATUS "C++ compile flags (Debug):    ${PROJECT_COMPILER_FLAGS_DEBUG} ${PROJECT_CXX_COMPILER_FLAGS_DEBUG}")
   message(STATUS "C++ compile flags (Release):  ${PROJECT_COMPILER_FLAGS_RELEASE} ${PROJECT_CXX_COMPILER_FLAGS_RELEASE}")
+
   message(STATUS "Exe link flags:               ${PROJECT_LINKER_FLAGS} ${PROJECT_EXE_LINKER_FLAGS}")
   message(STATUS "Exe link flags (Debug):       ${PROJECT_LINKER_FLAGS_DEBUG} ${PROJECT_EXE_LINKER_FLAGS_DEBUG}")
   message(STATUS "Exe link flags (Release):     ${PROJECT_LINKER_FLAGS_RELEASE} ${PROJECT_EXE_LINKER_FLAGS_RELEASE}")
+  
   message(STATUS "Shared link flags:            ${PROJECT_LINKER_FLAGS} ${PROJECT_SHARED_LINKER_FLAGS}")
   message(STATUS "Shared link flags (Debug):    ${PROJECT_LINKER_FLAGS_DEBUG} ${PROJECT_SHARED_LINKER_FLAGS_DEBUG}")
   message(STATUS "Shared link flags (Release):  ${PROJECT_LINKER_FLAGS_RELEASE} ${PROJECT_SHARED_LINKER_FLAGS_RELEASE}")
@@ -244,8 +247,6 @@ macro(ADD_LOGICAL_TARGET target debug_lib release_lib)
     )
 endmacro()
 
-# Set common target properties. Use SET_LIBRARY_TARGET_PROPERTIES() or
-# SET_EXECUTABLE_TARGET_PROPERTIES() instead of calling this macro directly.
 macro(SET_COMMON_TARGET_PROPERTIES target)
   # Compile flags.
   target_compile_options(${target} PRIVATE ${PROJECT_COMPILER_FLAGS} ${PROJECT_CXX_COMPILER_FLAGS})
@@ -303,8 +304,27 @@ macro(SET_COMMON_TARGET_PROPERTIES target)
   endif()
 endmacro()
 
-# Set executable/library-specific properties.
-macro(SET_TARGET_PROPERTIES target)
+# Set executable-specific properties.
+macro(SET_EXECUTABLE_TARGET_PROPERTIES target)
+  SET_COMMON_TARGET_PROPERTIES(${target})
+
+  # Executable linker flags.
+  if(PROJECT_EXE_LINKER_FLAGS)
+    string(REPLACE ";" " " _flags_str "${PROJECT_EXE_LINKER_FLAGS_FLAGS}")
+    set_property(TARGET ${target} PROPERTY LINK_FLAGS ${_flags_str})
+  endif()
+  if(PROJECT_EXE_LINKER_FLAGS_DEBUG)
+    string(REPLACE ";" " " _flags_str "${PROJECT_EXE_LINKER_FLAGS_DEBUG}")
+    set_property(TARGET ${target} PROPERTY LINK_FLAGS_DEBUG ${_flags_str})
+  endif()
+  if(PROJECT_EXE_LINKER_FLAGS_RELEASE)
+    string(REPLACE ";" " " _flags_str "${PROJECT_EXE_LINKER_FLAGS_RELEASE}")
+    set_property(TARGET ${target} PROPERTY LINK_FLAGS_RELEASE ${_flags_str})
+  endif()
+endmacro()
+
+# Set dll-specific properties.
+macro(SET_SHARED_TARGET_PROPERTIES target)
   SET_COMMON_TARGET_PROPERTIES(${target})
 
   # Shared library linker flags.

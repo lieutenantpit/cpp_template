@@ -1,59 +1,66 @@
-# # Append platform specific sources to a list of sources.
-# macro(APPEND_PLATFORM_SOURCES name_of_list)
-#   if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin" AND ${name_of_list}_MACOSX)
-#     list(APPEND ${name_of_list} ${${name_of_list}_MACOSX})
-#   endif()
-#   if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" AND ${name_of_list}_LINUX)
-#     list(APPEND ${name_of_list} ${${name_of_list}_LINUX})
-#   endif()
-#   if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" AND ${name_of_list}_WINDOWS)
-#     list(APPEND ${name_of_list} ${${name_of_list}_WINDOWS})
-#   endif()
-# endmacro()
-
 set(PROJECT_TARGET cpp_template)
 
-set(PROJECT_SRCS
+set(PROJECT_SOURCES
   src/main.cpp
   )
 
-set(PROJECT_SRCS_LINUX
+set(PROJECT_SOURCES_LINUX
   #list of files
   )
 
-set(PROJECT_SRCS_MACOSX
+set(PROJECT_SOURCES_MACOSX
   #list of files
   )
 
-set(PROJECT_SRCS_WINDOWS
+set(PROJECT_SOURCES_WINDOWS
   #list of files
   )
 
-APPEND_PLATFORM_SOURCES(PROJECT_SRCS)
-source_group(src FILES ${PROJECT_SRCS})
+APPEND_PLATFORM_SOURCES(PROJECT_SOURCES)
+source_group(src FILES ${PROJECT_SOURCES})
 
-set(PROJECT_INCS
+set(PROJECT_INCLUDES
   src/main.h
   )
 
-set(PROJECT_INCS_LINUX
+set(PROJECT_INCLUDES_LINUX
   #list of files
   )
 
-set(PROJECT_INCS_MACOSX
+set(PROJECT_INCLUDES_MACOSX
   #list of files
   )
 
-set(PROJECT_INCS_WINDOWS
+set(PROJECT_INCLUDES_WINDOWS
   #list of files
   )
 
-APPEND_PLATFORM_SOURCES(PROJECT_INCS)  
-source_group(include FILES ${PROJECT_INCS})
+APPEND_PLATFORM_SOURCES(PROJECT_INCLUDES)  
+source_group(include FILES ${PROJECT_INCLUDES})
+
+set(PROJECT_RESOURCES
+  #list of files
+  )
+
+set(PROJECT_RESOURCES_LINUX
+  #list of files
+  )
+
+set(PROJECT_RESOURCES_MACOSX
+  #list of files
+  )
+
+set(PROJECT_RESOURCES_WINDOWS
+  #list of files
+  )
+
+APPEND_PLATFORM_SOURCES(PROJECT_RESOURCES)  
+source_group(resources FILES ${PROJECT_RESOURCES})
 
 add_executable(${PROJECT_TARGET}
-  ${PROJECT_SRCS}
-  ${PROJECT_INCS}
+  ${PROJECT_SOURCES}
+  ${PROJECT_INCLUDES}
+  ${PROJECT_RESOURCES}
   )
 
-SET_TARGET_PROPERTIES(${PROJECT_TARGET})
+SET_EXECUTABLE_TARGET_PROPERTIES(${PROJECT_TARGET})

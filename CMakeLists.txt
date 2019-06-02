@@ -4,7 +4,7 @@ set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 project(cpp_template)
 
-set_property(GLOBAL PROPERTY OS_FOLDERS ON)
+# set_property(GLOBAL PROPERTY OS_FOLDERS ON)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 
